@@ -6,11 +6,11 @@
 
 
 
-#define MAX_BYTE_BUFFER_SIZE 4096 //You can adjust the default byte limit size according to your needs.
+#define MAX_BYTE_BUFFER_SIZE 4096 //You can adjust the limit size according to your needs.
 
 
 /**
- * @note  A ByteBuffer contains a large char array. Make it global
+ * @note  A bytebuffer contains a large char array. Make it global
  *        and reuse it with Reset() instead of creating
  *        new ones repeatedly."
  *     
@@ -18,8 +18,8 @@
 enum struct ByteBuffer
 {
 	char bytes[MAX_BYTE_BUFFER_SIZE];
-	int readPos;// Only used during reading
-	int size;// Actual length of data in the buffer
+	int readPos;// Only used during reading.
+	int size;// Actual length of data in the bytebuffer.
 
 
 	/**
@@ -36,7 +36,7 @@ enum struct ByteBuffer
 	/**
 	 * Copy and load data into the bytebuffer.
 	 * @note  You can use this function multiple times to load data, with 
-	 *        each invocation appending the data to the end of the ByteBuffer.
+	 *        each invocation appending the data to the end of the bytebuffer.
 	 *        
 	 * @param source        The source data buffer to load.
 	 * @param startPos      The first byte index to read from the source data buffer.
@@ -70,7 +70,7 @@ enum struct ByteBuffer
 	}
 
 	/**
-	 * Writes a 8bit unsigned integer to the ByteBuffer.
+	 * Writes a 8bit unsigned integer to the bytebuffer.
 	 * @note  The range of uint8 is 0-255. Writing a value outside this range
 	 *        will not throw an error, but it will result in reading an 
 	 *        incorrect numerical value.
@@ -83,7 +83,7 @@ enum struct ByteBuffer
 		
 		if(this.size  + 1> MAX_BYTE_BUFFER_SIZE)
 		{
-			ThrowError("Buffer overflow detected. Cannot write %i more bytes to the buffer of size %i", 1, MAX_BYTE_BUFFER_SIZE);
+			ThrowError("Buffer overflow detected. Cannot write one more byte to the buffer of size %i", MAX_BYTE_BUFFER_SIZE);
 		}
 
 		this.bytes[this.size] =  val & 0xFF;
@@ -155,19 +155,7 @@ enum struct ByteBuffer
 	 */
 	void WriteFloat(float val)
 	{
-		
-		if(this.size+4 > MAX_BYTE_BUFFER_SIZE)
-		{
-			ThrowError("Buffer overflow detected. Cannot write %i more bytes to the buffer of size %i", 4, MAX_BYTE_BUFFER_SIZE);
-		}
-
-		int v2 = view_as<int>(val);
-		this.bytes[this.size] =  v2 & 0xFF;
-		this.bytes[this.size+1] =  (v2 >>8) & 0xFF;
-		this.bytes[this.size+2] =  (v2 >>16) & 0xFF;
-		this.bytes[this.size+3] =  (v2 >>24) & 0xFF;
-		this.size += 4;
-	
+		this.WriteInt32(view_as<int>(val));
 	}
 
 	/**
@@ -186,9 +174,10 @@ enum struct ByteBuffer
 
 		for(int i = 0 ;i < addSize;i++)
 		{
-			this.bytes[this.size] = string[i];
-			this.size += 1;
+			this.bytes[this.size+i] = string[i];
+			
 		}
+		this.size += addSize;
 
 	}
 
@@ -268,9 +257,9 @@ enum struct ByteBuffer
 	 *
 	 * @param dest          Destination string buffer to copy to.
 	 * @param destLen       Destination buffer length (includes null terminator).
-	 * @return              Number of characters written to the buffer,
- 	 *                      not including the null terminator.
-	 * @error               Destination buffer too small or no string found in the bytebuffer.
+	 * @return              Number of characters written to the buffer, not including 
+	 *                      the null terminator.
+	 * @error               Destination buffer too small or no string found.
 	 */
 	int ReadString(char[] dest,int destLen)
 	{
@@ -302,7 +291,10 @@ enum struct ByteBuffer
 	/**
 	 * Overwrites a 2-byte uint16 at a specified position in the bytebuffer.
 	 * @note  You should overwrite at the correct starting position, otherwise
-	 *        it may overwrite other data and cause unforeseen issues. 
+	 *        it may overwrite other data and cause unforeseen issues.The range
+	 *        of uint16 is 0-65535. Writing a value outside this range will not
+	 *        throw an error, but it will result in reading an incorrect numerical
+	 *        value. 
  	 *        
 	 * @param val           Integer to overwrite.(value will be written as 16bit).
 	 * @param startPosition Position of the first byte to be overwritten.
