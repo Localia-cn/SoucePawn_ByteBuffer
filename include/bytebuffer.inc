@@ -159,6 +159,19 @@ enum struct ByteBuffer
 	}
 
 	/**
+	 * Writes a 3D normal vector to the bytebuffer.
+	 *
+	 * @param vec           Vector to write.
+	 * @error               Insufficient remaining space in the bytebuffer.
+	 */
+	void WriteVector(float vec[3])
+	{
+		this.WriteFloat(vec[0]);
+		this.WriteFloat(vec[1]);
+		this.WriteFloat(vec[2]);
+	}
+
+	/**
 	 * Writes a string to the bytebuffer.
 	 *
 	 * @param string        Text string to write.
@@ -250,6 +263,20 @@ enum struct ByteBuffer
 	float ReadFloat()
 	{
 		return view_as<float>(this.ReadInt32());
+	}
+
+	/**
+	 * Reads a 3D normal vector from the bytebuffer.
+	 *
+	 * @vec                 Destination vector array.
+	 * @error               Not enough data to read.
+	 */
+	void ReadVector(float vec[3])
+	{
+		vec[0] = this.ReadFloat();
+		vec[1] = this.ReadFloat();
+		vec[2] = this.ReadFloat();
+		
 	}
 	
 	/**
