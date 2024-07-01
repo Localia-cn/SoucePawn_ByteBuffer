@@ -13,13 +13,16 @@
  * @note  A bytebuffer contains a large char array. Make it global
  *        and reuse it with Reset() instead of creating
  *        new ones repeatedly."
- *     
+ * 
+ * @param bytes         The buffer used to store byte data.
+ * @param size          The size of data already written to the buffer.
+ * @param readPos       The current read offset of this buffer (starting at 0).
  */
 enum struct ByteBuffer
 {
 	char bytes[MAX_BYTE_BUFFER_SIZE];
-	int readPos;// Only used during reading.
-	int size;// Actual length of data in the bytebuffer.
+	int readPos;
+	int size;
 
 
 	/**
