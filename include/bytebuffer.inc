@@ -47,7 +47,7 @@ enum struct ByteBuffer
 	 * @error               Insufficient remaining space in the bytebuffer or 
 	 *                      addSize < 0 or startPos < 0.
 	 */
-	void LoadBytes(char[] source,int startPos,int addSize)
+	void LoadBytes(const char[] source,int startPos,int addSize)
 	{
 		if(startPos < 0)
 		{
@@ -180,7 +180,7 @@ enum struct ByteBuffer
 	 * @param string        Text string to write.
 	 * @error               Insufficient remaining space in the bytebuffer.
 	 */
-	void WriteString(char[] string)
+	void WriteString(const char[] string)
 	{
 		int addSize = strlen(string) + 1;
 		if(this.size + addSize > MAX_BYTE_BUFFER_SIZE)
