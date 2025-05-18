@@ -27,8 +27,8 @@ public void OnPluginStart()
 	vec1 = { 0.1, 0.2, 0.3 };
 	bf.WriteVector(vec1);
 
-	bf.WriteString("AAAAAA");
-	bf.WriteString("BBBBBB");
+	bf.WriteString("");
+	bf.WriteString("AAA");
 
 	PrintToServer("Total Write: %i bytes", bf.size);
 	char sTemp[4096];

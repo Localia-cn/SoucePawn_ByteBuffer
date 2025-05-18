@@ -1,8 +1,8 @@
 
-#if defined _bytebuffer_included
+#if defined _simple_bytebuffer_included
  #endinput
 #endif
-#define _bytebuffer_included
+#define _simple_bytebuffer_included
 
 
 
@@ -20,7 +20,7 @@
  */
 enum struct ByteBuffer
 {
-	char bytes[MAX_BYTE_BUFFER_SIZE];
+	char bytes[MAX_BYTE_BUFFER_SIZE+1];//+1后在末尾额外添加\0，能保证ReadString检查strlen时不会越界
 	int readPos;
 	int size;
 
@@ -61,7 +61,7 @@ enum struct ByteBuffer
 
 		if(this.size + addSize > MAX_BYTE_BUFFER_SIZE)
 		{
-			ThrowError("Buffer overflow detected. Cannot write %i more bytes to the buffer of size %i", addSize, MAX_BYTE_BUFFER_SIZE);
+			ThrowError("Buffer overflow detected. Cannot write %i more bytes to the buffer, remain size %i", addSize, MAX_BYTE_BUFFER_SIZE);
 		}
 
 		for(int i = 0 ;i < addSize;i++)
@@ -119,7 +119,7 @@ enum struct ByteBuffer
 		
 		if(this.size  + 2> MAX_BYTE_BUFFER_SIZE)
 		{
-			ThrowError("Buffer overflow detected. Cannot write %i more bytes to the buffer of size %i", 2, MAX_BYTE_BUFFER_SIZE);
+			ThrowError("Buffer overflow detected. Cannot write %i more bytes to the buffer, remain size %i", 2, MAX_BYTE_BUFFER_SIZE - this.size);
 		}
 
 		this.bytes[this.size] =  val & 0xFF;
@@ -139,7 +139,7 @@ enum struct ByteBuffer
 		
 		if(this.size  + 4> MAX_BYTE_BUFFER_SIZE)
 		{
-			ThrowError("Buffer overflow detected. Cannot write %i more bytes to the buffer of size %i", 4, MAX_BYTE_BUFFER_SIZE);
+			ThrowError("Buffer overflow detected. Cannot write %i more bytes to the buffer, remain size %i", 4, MAX_BYTE_BUFFER_SIZE - this.size);
 		}
 
 		this.bytes[this.size] =  val & 0xFF;
@@ -178,23 +178,23 @@ enum struct ByteBuffer
 	 * Writes a string to the bytebuffer.
 	 *
 	 * @param string        Text string to write.
+	 * @return              Number of characters written to the buffer, not including 
+	 *                      the null terminator.
 	 * @error               Insufficient remaining space in the bytebuffer.
 	 */
-	void WriteString(const char[] string)
+	int WriteString(const char[] string)
 	{
+		
 		int addSize = strlen(string) + 1;
-		if(this.size + addSize > MAX_BYTE_BUFFER_SIZE)
-		{
-			ThrowError("Buffer overflow detected. Cannot write %i more bytes to the buffer of size %i", addSize, MAX_BYTE_BUFFER_SIZE);
-		}
+        if(this.size + addSize > MAX_BYTE_BUFFER_SIZE)
+            ThrowError("Buffer overflow detected. Cannot write %i more bytes to the buffer, remain size %i", addSize, MAX_BYTE_BUFFER_SIZE - this.size);
 
-		for(int i = 0 ;i < addSize;i++)
-		{
-			this.bytes[this.size+i] = string[i];
-			
-		}
-		this.size += addSize;
+        // 使用strcopy优化字符串写入
+		strcopy(this.bytes[this.size], addSize, string);
 
+        this.size += addSize;
+
+		return addSize -1;
 	}
 
 	/**
@@ -293,29 +293,26 @@ enum struct ByteBuffer
 	 */
 	int ReadString(char[] dest,int destLen)
 	{
-		int i = 0;
-		int c;
-		while(this.readPos < this.size)
+		int startPos = this.readPos;
+		if(startPos + 1> this.size)
 		{
-			if(i >= destLen)
-			{
-				ThrowError("Destination buffer too small.");
-			}
-			c = this.bytes[this.readPos];
-
-			dest[i] = c;
-			this.readPos ++;
-			
-			if(c == 0)
-			{
-				return i;
-			}
-			i ++;
+			ThrowError("Not enough data to read string.");
 		}
-		ThrowError("No string found in the bytebuffer.");
-		return -1;
 
+        int str_size = strlen(this.bytes[startPos]) +1;//计算总长度（包含\0）
+		
+        // 检查字符串总长度位置是否在合理范围
+        if(startPos + str_size > this.size)
+            ThrowError("Invalid string termination");
+        
+        if(str_size > destLen)
+            ThrowError("Destination buffer too small.need %i ,now %i",str_size,destLen);
+        
+        // 使用strcopy优化字符串读取
+        strcopy(dest, str_size, this.bytes[startPos]);
 
+        this.readPos += str_size;
+        return str_size - 1; // 返回实际字符数（不包含\0）
 	}
 	
 	/**
