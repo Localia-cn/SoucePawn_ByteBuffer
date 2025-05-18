@@ -71,12 +71,17 @@ enum struct ByteBuffer
 		
 		// 优化方案：每次处理4字节
 		int blocks = addSize / 4;
+		int pos;
 		for (int i=0; i<blocks; i++) 
 		{
-			this.bytes[this.size + i*4 + 0] = source[startPos + i*4 + 0];
-			this.bytes[this.size + i*4 + 1] = source[startPos + i*4 + 1];
-			this.bytes[this.size + i*4 + 2] = source[startPos + i*4 + 2];
-			this.bytes[this.size + i*4 + 3] = source[startPos + i*4 + 3];
+			pos = i*4;
+			this.bytes[this.size + pos] = source[startPos + pos];
+			pos ++; 
+			this.bytes[this.size + pos] = source[startPos + pos];
+			pos ++; 
+			this.bytes[this.size + pos] = source[startPos + pos];
+			pos ++; 
+			this.bytes[this.size + pos] = source[startPos + pos];
 		}
 		
 		// 处理小于cell剩余字节
