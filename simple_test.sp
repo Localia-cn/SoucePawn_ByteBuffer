@@ -1,5 +1,5 @@
 #include <sourcemod>
-#include <bytebuffer>
+#include <simple_bytebuffer>
 
 #pragma newdecls required
 #pragma semicolon 1
