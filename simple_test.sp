@@ -1,5 +1,7 @@
 #include <sourcemod>
+#include <profiler>
 #include <simple_bytebuffer>
+
 
 #pragma newdecls required
 #pragma semicolon 1
@@ -30,6 +32,9 @@ public void OnPluginStart()
 	bf.WriteString("");
 	bf.WriteString("AAA");
 
+	char a1[10] = "123456789";
+	bf.LoadBytes(a1,.startPos = 0,.addSize = 10);
+
 	PrintToServer("Total Write: %i bytes", bf.size);
 	char sTemp[4096];
 	BytesToHex(bf.bytes, bf.size, sTemp, sizeof(sTemp));
@@ -51,7 +56,51 @@ public void OnPluginStart()
 
 	bf.ReadString(sTemp, sizeof(sTemp));
 	PrintToServer("ReadString: %s", sTemp);
+
+	bf.ReadString(sTemp, sizeof(sTemp));
+	PrintToServer("ReadString: %s", sTemp);
+
+	TestDoBench();
 }
+
+
+void TestDoBench()	 
+{
+	char data[4096];
+
+	Handle hProf = CreateProfiler();
+	float  min	 = 10.0, max, avg;
+	int	   round = 20;
+	// Running the test 20 times to gain min/max/avg
+	for (int x = 0; x < round; x++)
+	{
+		StartProfiling(hProf);
+
+		// Running 1000 iterations for our test
+		for (int i = 0; i < 1000; i++)
+		{
+			
+        	bf.Reset();
+			bf.LoadBytes(data, 0, sizeof(data));
+		}
+
+		StopProfiling(hProf);
+
+		float speed = GetProfilerTime(hProf);
+		if (speed < min) min = speed;
+		if (speed > max) max = speed;
+		avg += speed;
+		// PrintToChatAll("%i speed %f",x,speed);
+	}
+
+	// Display our minimum, maximum and average times.
+	avg /= round;
+	PrintToServer("Bench: Min %fms. Avg %fms. Max %fms", min, avg, max);
+	PrintToChatAll("Bench: Min %fms. Avg %fms. Max %fms", min, avg, max);
+	delete hProf;
+}
+
+
 
 stock void BytesToHex(const char[] bytes, int size, char[] dest, int destLen)
 {

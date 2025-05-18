@@ -64,10 +64,30 @@ enum struct ByteBuffer
 			ThrowError("Buffer overflow detected. Cannot write %i more bytes to the buffer, remain size %i", addSize, MAX_BYTE_BUFFER_SIZE);
 		}
 
-		for(int i = 0 ;i < addSize;i++)
+		/*for(int i = 0 ;i < addSize;i++)
 		{
 			this.bytes[this.size + i] = source[startPos+i];
+		}*/
+		
+		// 优化方案：每次处理4字节
+		int blocks = addSize / 4;
+		for (int i=0; i<blocks; i++) 
+		{
+			this.bytes[this.size + i*4 + 0] = source[startPos + i*4 + 0];
+			this.bytes[this.size + i*4 + 1] = source[startPos + i*4 + 1];
+			this.bytes[this.size + i*4 + 2] = source[startPos + i*4 + 2];
+			this.bytes[this.size + i*4 + 3] = source[startPos + i*4 + 3];
 		}
+		
+		// 处理小于cell剩余字节
+		int remainder = addSize % 4;
+		for (int i=0; i<remainder; i++) 
+		{
+			this.bytes[this.size + blocks*4 + i] = source[startPos + blocks*4 + i];
+		}
+
+
+
 		this.size += addSize;
 	
 	}
@@ -293,6 +313,10 @@ enum struct ByteBuffer
 	 */
 	int ReadString(char[] dest,int destLen)
 	{
+		// 确保至少有1字节空间存放\0
+    	if (destLen < 1)
+        	ThrowError("Destination buffer too small");
+		
 		int startPos = this.readPos;
 		if(startPos + 1> this.size)
 		{
