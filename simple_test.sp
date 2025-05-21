@@ -66,7 +66,7 @@ public void OnPluginStart()
 
 void TestDoBench()	 
 {
-	char data[4096];
+	char data[MAX_BYTE_BUFFER_SIZE];
 
 	Handle hProf = CreateProfiler();
 	float  min	 = 10.0, max, avg;
