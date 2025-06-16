@@ -4,7 +4,7 @@
 
 #include <sourcemod>
 #include <socket>
-#include <bytebuffer>
+#include <simple_bytebuffer>
 
 #pragma newdecls required
 #pragma semicolon 1
